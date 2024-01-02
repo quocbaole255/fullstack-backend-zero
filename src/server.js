@@ -1,6 +1,9 @@
-const express = require("express");
-const path = require("path");
 require("dotenv").config();
+const express = require("express");
+const configViewEngine = require("./config/viewEngine");
+const webRoutes = require("./routes/web");
+
+const mysql = require("mysql2");
 
 console.log(">>> check env:", process.env);
 
@@ -9,20 +12,26 @@ const port = process.env.PORT || 8888;
 const hostname = process.env.HOST_NAME;
 
 // config template engine
-app.set("views", path.join(__dirname, "views"));
-app.set("views engine", "ejs"); // "My Site"
-
-// config static files
-app.use(express.static(path.join(__dirname, "public")));
+configViewEngine(app);
 
 // Khai bao route
-app.get("/", (req, res) => {
-  res.send("Hello World! it's me quoc bao & nodemon");
+
+app.use("/", webRoutes);
+
+// test connection
+
+const connection = mysql.createConnection({
+  host: "localhost",
+  port: 3307,
+  user: "root",
+  password: "123456",
+  database: "hoidanit",
 });
 
-app.get("/hoidanit", (req, res) => {
-  // res.send("<h1>Hoi dan it</h1>");
-  res.render("sample.ejs");
+// simple query
+connection.query("select * from Users u", function (err, results, fields) {
+  console.log(">>>>results=", results); // results contains rows returned by server
+  console.log(">>field=", fields); // fields contains extra meta data about results, if available
 });
 
 app.listen(port, hostname, () => {
